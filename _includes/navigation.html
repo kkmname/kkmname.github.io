@@ -1,0 +1,34 @@
+<nav id="main-navigation" class="col-md-4 navigation">
+    <ul>
+        <!-- top level -->
+        {% for topSubject in site.data.subjects %}
+        <li>
+            {% if topSubject.child %}
+                <button class="btn btn-link directory text-black" type="button" data-bs-toggle="collapse" data-bs-target="#{{ topSubject.name }}">{{ topSubject.name }}</button>
+                <ul class="collapse" id="{{ topSubject.name }}">
+                    <!-- middel level -->
+                    {% for middleSubject in topSubject.child %}
+                    <li>
+                        {% if middleSubject.child %}
+                            <button class="btn btn-link directory text-black" type="button" data-bs-toggle="collapse" data-bs-target="#{{ middleSubject.name }}">{{ middleSubject.name }}</button>
+                            <ul class="collapse" id="{{ middleSubject.name }}">
+                                <!-- bottom level -->
+                                {% for bottomSubject in middleSubject.child %}
+                                    <li>
+                                        <a class="file text-black subject" href="/{{ bottomSubject.link }}">{{ bottomSubject.name }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <a class="file text-black subject" href="/{{ middleSubject.link }}">{{ middleSubject.name }}</a>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <a class="file text-black subject" href="/{{ topSubject.link }}">{{ topSubject.name }}</a>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</nav>

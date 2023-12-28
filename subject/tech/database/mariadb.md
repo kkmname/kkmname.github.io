@@ -1,0 +1,4 @@
+---
+layout: subject
+permalink: /mariadb
+---

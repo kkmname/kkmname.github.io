@@ -1,0 +1,25 @@
+# sample
+# - name: wiki
+#   link: #
+#   child:
+#     - name: Spring
+#       link: #
+#       child:
+#         - name: Spring Core
+#           link: spring-core
+#     - name: tomcat
+
+- name: Tech
+  link: #
+  child:
+    - name: Database
+      link: #
+      child:
+        - name: MariaDB
+          link: mariadb
+
+- name: Video
+  link: video
+
+- name: Book
+  link: book

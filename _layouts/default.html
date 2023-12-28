@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko">
+  {% include head.html %}
+  <body class="bg-body-tertiary">
+    {% include header.html %}
+    <main class="container mt-5">
+        <div class="row">
+
+            {% include navigation.html %}
+            <section class="col-md-8">
+                {{ content }}
+            </section>
+        </div>
+    </main>
+    {% include footer.html %}
+  </body>
+</html>
