@@ -12,11 +12,8 @@
 - name: Tech
   link: #
   child:
-    - name: Database
-      link: #
-      child:
-        - name: MariaDB
-          link: mariadb
+    - name: Documentation
+      link: documentation
 
 - name: Video
   link: video
