@@ -28,6 +28,12 @@ Copies of this document may be made for your own use and for distribution to oth
 [【1】핵심기술](#1핵심기술)  
 &nbsp;&nbsp;[【1.1】IoC 컨테이너](#11ioc-컨테이너)  
 &nbsp;&nbsp;&nbsp;&nbsp;[【1.1.1】Spring IoC 컨테이너 및 Bean 소개](#111spring-ioc-컨테이너-및-bean-소개)  
+&nbsp;&nbsp;&nbsp;&nbsp;[【1.1.2】컨테이너 개요](#112컨테이너-개요)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[【1.1.2.1】구성 메타데이터](#1121구성-메타데이터)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[【1.1.2.2】컨테이너 인스턴스화](#1122컨테이너-인스턴스화)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[【1.1.2.3】XML 기반 구성 메타데이터 작성](#1123xml-기반-구성-메타데이터-작성)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[【1.1.2.4】Groovy Bean 정의 DSL](#1124groovy-bean-정의-dsl)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[【1.1.2.5】컨테이너 사용](#1125컨테이너-사용)  
 
 ---
 
@@ -182,3 +188,285 @@ AOT 처리를 사용하면 애플리케이션을 미리 최적화할 수 있다.
 
 간단히 말해서 `BeanFactory`는 구성 프레임워크와 기본 기능을 제공하고 `ApplicationContext`는 더 많은 기업별 기능을 추가한다. `ApplicationContext`는 `BeanFactory`의 완전한 상위 집합이며 이 장에서는 Spring의 IoC 컨테이너 설명에 독점적으로 사용된다. `ApplicationContext` 대신 `BeanFactory`를 사용하는 방법에 대한 자세한 내용은 `BeanFactory` [API](https://docs.spring.io/spring-framework/reference/core/beans/beanfactory.html)를 다루는 섹션을 참조하라.
 
+## 【1.1.2】컨테이너 개요
+¶ Container Overview
+
+*The `org.springframework.context.ApplicationContext` interface represents the Spring IoC container and is responsible for instantiating, configuring, and assembling the beans. The container gets its instructions on what objects to instantiate, configure, and assemble by reading configuration metadata. The configuration metadata is represented in XML, Java annotations, or Java code. It lets you express the objects that compose your application and the rich interdependencies between those objects.*
+
+`org.springframework.context.ApplicationContext` 인터페이스는 Spring IoC 컨테이너를 나타내며 빈의 인스턴스화, 구성 및 조립을 담당한다. 컨테이너는 구성 메타데이터를 읽어 어떤 개체를 인스턴스화하고, 구성하고, 어셈블할지에 대한 지침을 얻는다. 구성 메타데이터는 XML, Java 주석(Annotation) 또는 Java 코드로 표시된다. 이를 통해 애플리케이션을 구성하는 개체와 해당 개체 간의 풍부한 상호 종속성을 표현할 수 있다.
+
+*Several implementations of the `ApplicationContext` interface are supplied with Spring. In stand-alone applications, it is common to create an instance of `ClassPathXmlApplicationContext` or `FileSystemXmlApplicationContext`. While XML has been the traditional format for defining configuration metadata, you can instruct the container to use Java annotations or code as the metadata format by providing a small amount of XML configuration to declaratively enable support for these additional metadata formats.*
+
+`ApplicationContext` 인터페이스의 여러 구현이 Spring과 함께 제공된다. 독립형 애플리케이션에서는 `ClassPathXmlApplicationContext` 또는 `FileSystemXmlApplicationContext`의 인스턴스를 생성하는 것이 일반적이다. XML은 구성 메타데이터를 정의하기 위한 전통적인 형식이었지만, 이러한 추가 메타데이터 형식에 대한 지원을 선언적으로 활성화하기 위해 소량의 XML 구성을 제공함으로써 Java 주석이나 코드를 메타데이터 형식으로 사용하도록 컨테이너에 지시할 수 있다.
+
+*In most application scenarios, explicit user code is not required to instantiate one or more instances of a Spring IoC container. For example, in a web application scenario, a simple eight (or so) lines of boilerplate web descriptor XML in the `web.xml` file of the application typically suffices (see [Convenient ApplicationContext Instantiation for Web Applications](https://docs.spring.io/spring-framework/reference/core/beans/context-introduction.html#context-create)). If you use the [Spring Tools for Eclipse](https://spring.io/tools) (an Eclipse-powered development environment), you can easily create this boilerplate configuration with a few mouse clicks or keystrokes.*
+
+대부분의 애플리케이션 시나리오에서는 Spring IoC 컨테이너의 하나 이상의 인스턴스를 인스턴스화하는 데 명시적인 사용자 코드가 필요하지 않다. 예를 들어, 웹 애플리케이션 시나리오에서는 일반적으로 애플리케이션의 `web.xml` 파일에 있는 상용구 웹 설명자 XML의 간단한 8줄이면 충분하다(참고 [Convenient ApplicationContext Instantiation for Web Applications](https://docs.spring.io/spring-framework/reference/core/beans/context-introduction.html#context-create)). [Eclipse 용 Spring Toos](https://spring.io/tools)(Eclipse기반 개발 환경)를 사용하는 경우 몇 번의 마우스 클릭이나 키 입력만으로 이러한 상용구 구성을 쉽게 생성할 수 있다.
+
+*The following diagram shows a high-level view of how Spring works. Your application classes are combined with configuration metadata so that, after the `ApplicationContext`` is created and initialized, you have a fully configured and executable system or application.*
+
+다음 다이어그램은 Spring이 작동하는 방식에 대한 높은 수준의 보기를 보여준다. 애플리케이션 클래스는 구성 메타데이터와 결합되므로 `ApplicationContext`가 생성되고 초기화된 후 완전히 구성되고 실행 가능한 시스템 또는 애플리케이션을 갖게 된다.
+
+![https://docs.spring.io/spring-framework/reference/_images/container-magic.png](/asset/attach/2024-01-22-spring-framework/The-Spring-IoC-container.png)
+
+## 【1.1.2.1】구성 메타데이터
+¶ Configuration Metadata
+
+*As the preceding diagram shows, the Spring IoC container consumes a form of configuration metadata. This configuration metadata represents how you, as an application developer, tell the Spring container to instantiate, configure, and assemble the objects in your application.*
+
+이전 다이어그램에서 볼 수 있듯이 Spring IoC 컨테이너는 구성 메타데이터 형식을 사용한다. 이 구성 메타데이터는 애플리케이션 개발자로서 Spring 컨테이너 애플리케이션의 객체를 인스턴스화, 구성 및 어셈블하도록 지시하는 방법을 나타낸다.
+
+*Configuration metadata is traditionally supplied in a simple and intuitive XML format, which is what most of this chapter uses to convey key concepts and features of the Spring IoC container.*
+
+구성 메타데이터는 전통적으로 간단하고 직관적인 XML 형식으로 제공되며, 이 장의 대부분은 Spring IoC 컨테이너의 주요 개념과 기능을 전달하는 데 사용된다.
+
+> **Note**
+> 
+> *XML-based metadata is not the only allowed form of configuration metadata. The Spring IoC container itself is totally decoupled from the format in which this configuration metadata is actually written. These days, many developers choose [Java-based configuration](https://docs.spring.io/spring-framework/reference/core/beans/java.html) for their Spring applications.*  
+>
+> XML 기반 메타데이터는 구성 메타데이터의 유일한 허용 형식이 아니다. Spring IoC 컨테이너 자체는 이 구성 메타데이터가 실제로 작성되는 형식과 완전히 분리되어 있다. 요즘에는 많은 개발자가 Spring 애플리케이션에 대해 [Java 기반 구성](https://docs.spring.io/spring-framework/reference/core/beans/java.html)을 선택한다.
+
+*For information about using other forms of metadata with the Spring container, see:*
+
+- *[Annotation-based configuration](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config.html): define beans using annotation-based configuration metadata.*
+- *[Java-based configuration](https://docs.spring.io/spring-framework/reference/core/beans/java.html): define beans external to your application classes by using Java rather than XML files. To use these features, see the `@Configuration`, `@Bean`, `@Import`, and `@DependsOn` annotations.*
+
+Spring 컨테이너에서 다른 형태의 메타데이터를 사용하는 방법에 대한 자세한 내용은 다음을 참조하라.
+
+- [주석(Annotation) 기반 구성](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config.html): 주석 기반 구성 메타데이터를 사용하여 Bean을 정의한다.  
+- [Java 기반 구성](https://docs.spring.io/spring-framework/reference/core/beans/java.html): XML 파일이 아닌 Java를 사용하여 애플리케이션 클래스 외부에 Bean을 정의한다. 이러한 기능을 사용하려면 `@Configuration`, `@Bean`, `@Import` 및 `@DependsOn` 주석을 참조하라.
+
+*Spring configuration consists of at least one and typically more than one bean definition that the container must manage. XML-based configuration metadata configures these beans as `<bean/>` elements inside a top-level `<beans/>` element. Java configuration typically uses `@Bean-annotated` methods within a `@Configuration` class.*
+
+Spring 구성은 컨테이너가 관리해야 하는 적어도 하나, 일반적으로 하나 이상의 Bean 정의로 구성된다. XML 기반 구성 메타데이터는 이러한 Bean을 최상위 `<beans/>` 요소 내의 `<bean/>` 요소로 구성한다. Java 구성은 일반적으로 `@Configuration` 클래스 내에서 `@Bean` 주석이 달린 메서드를 사용한다.
+
+*These bean definitions correspond to the actual objects that make up your application. Typically, you define service layer objects, persistence layer objects such as repositories or data access objects (DAOs), presentation objects such as Web controllers, infrastructure objects such as a JPA `EntityManagerFactory`, JMS queues, and so forth. Typically, one does not configure fine-grained domain objects in the container, because it is usually the responsibility of repositories and business logic to create and load domain objects.*
+
+이러한 빈 정의는 애플리케이션을 구성하는 실제 객체에 해당한다. 일반적으로 서비스 계층 객체, 저장소나 DAO(데이터 액세스 객체)와 같은 지속성 계층 객체, 웹 컨트롤러와 같은 프리젠테이션 객체, JPA `ENtityManagerFactory`와 같은 인프라 객체, JMS 큐 등을 정의한다. 일반적으로 도메인 개체를 생성하고 로드하는 것은 일반적으로 리포지토리와 비즈니스 논리의 책임이기 때문에 컨테이너에서 세분화된 도메인 개체를 구성하지 않는다.
+
+*The following example shows the basic structure of XML-based configuration metadata:*
+
+다음 예에서는 XML 기반 구성 메타데이터의 기본 구조를 보여준다.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="..." class="..."> ① ②
+		<!-- collaborators and configuration for this bean go here -->
+	</bean>
+
+	<bean id="..." class="...">
+		<!-- collaborators and configuration for this bean go here -->
+	</bean>
+
+	<!-- more bean definitions go here -->
+
+</beans>
+```
+
+① `id`` 속성은 개별 빈 정의를 식별하는 문자열이다.
+
+*The id attribute is a string that identifies the individual bean definition.*
+
+② `class` 속성은 Bean의 유형을 정의하고 완전한 클래스 이름을 사용한다.
+
+*The class attribute defines the type of the bean and uses the fully qualified class name.*
+
+## 【1.1.2.2】컨테이너 인스턴스화
+¶ Instantiating a Container
+
+*The location path or paths supplied to an `ApplicationContext` constructor are resource strings that let the container load configuration metadata from a variety of external resources, such as the local file system, the Java `CLASSPATH`, and so on.*
+
+`ApplicationContext` 생성자에 제공된 위치 경로는 컨테이너가 로컬 파일 시스템, Java `CLASSPATH` 등과 같은 다양한 외부 리소스에서 구성 메타데이터를 로드할 수 있도록 하는 리소스 문자열이다.
+
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");
+```
+
+> **Note**
+>
+> *After you learn about Spring’s IoC container, you may want to know more about Spring’s `Resource` abstraction (as described in [Resources](https://docs.spring.io/spring-framework/reference/web/webflux-webclient/client-builder.html#webflux-client-builder-reactor-resources)) which provides a convenient mechanism for reading an InputStream from locations defined in a URI syntax. In particular, `Resource` paths are used to construct applications contexts, as described in [Application Contexts and Resource Paths](https://docs.spring.io/spring-framework/reference/core/resources.html#resources-app-ctx).*
+>
+> Spring의 IoC 컨테이너에 대해 배운 후에는 URI 구문에 정의된 위치에서 InputStream을 읽는 편리한 메커니즘을 제공하는 Spring의 `Resource` 추상화([리소스](https://docs.spring.io/spring-framework/reference/web/webflux-webclient/client-builder.html#webflux-client-builder-reactor-resources)에 대해 설명됨)에 대해 더 알고 싶을 수 있다. 특히 리소스 경로는 [애플리케이션 컨텍스트 및 `Resource` 경로](https://docs.spring.io/spring-framework/reference/core/resources.html#resources-app-ctx)에 설명된 대로 애플리케이션 컨텍스를 구성하는 데 사용된다.
+
+*The following example shows the service layer objects `(services.xml)` configuration file:*
+
+다음 예에서는 서비스 계층 개체 `services.xml` 구성 파일을 보여준다.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- services -->
+
+	<bean id="petStore" class="org.springframework.samples.jpetstore.services.PetStoreServiceImpl">
+		<property name="accountDao" ref="accountDao"/>
+		<property name="itemDao" ref="itemDao"/>
+		<!-- additional collaborators and configuration for this bean go here -->
+	</bean>
+
+	<!-- more bean definitions for services go here -->
+
+</beans>
+```
+
+*The following example shows the data access objects daos.xml file:*
+
+다음 예에서는 데이터 액세스 개체 `daos.xml` 파일을 보여준다.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="accountDao"
+		class="org.springframework.samples.jpetstore.dao.jpa.JpaAccountDao">
+		<!-- additional collaborators and configuration for this bean go here -->
+	</bean>
+
+	<bean id="itemDao" class="org.springframework.samples.jpetstore.dao.jpa.JpaItemDao">
+		<!-- additional collaborators and configuration for this bean go here -->
+	</bean>
+
+	<!-- more bean definitions for data access objects go here -->
+
+</beans>
+```
+
+*In the preceding example, the service layer consists of the `PetStoreServiceImpl` class and two data access objects of the types `JpaAccountDao` and `JpaItemDao` (based on the JPA Object-Relational Mapping standard). The `property name` element refers to the name of the JavaBean property, and the `ref` element refers to the name of another bean definition. This linkage between id and `ref` elements expresses the dependency between collaborating objects. For details of configuring an object’s dependencies, see [Dependencies](https://docs.spring.io/spring-framework/reference/core/beans/dependencies.html).*
+
+앞의 예에서 서비스 계층은 `PetStoreServiceImpl` 클래스와 `JpaAccountDao` 및 `JpaItemDao` 유형(JPA 객체 관계형 매핑 표준 기반)의 두 액세스 개체로 구성된다. `property name` 요소는 JavaBean 속성의 이름을 참조하고, `ref` 요소는 다른 빈 정의의 이름을 참조한다. id와 `ref` 요소 간의 이러한 연결은 공동 작업 개체 간의 종속성을 표현한다. 개체의 종속성 구성에 대한 자세한 내용은 [종속성](https://docs.spring.io/spring-framework/reference/core/beans/dependencies.html)을 참조하라.
+
+## 【1.1.2.3】XML 기반 구성 메타데이터 작성
+¶ Composing XML-based Configuration Metadata
+
+*It can be useful to have bean definitions span multiple XML files. Often, each individual XML configuration file represents a logical layer or module in your architecture.*
+
+여러 XML 파일에 걸쳐 빈 정의를 갖는 것이 유용할 수 있다. 객 개별 XML 구성 파일은 아키텍처의 논리적 계층이나 모듈을 나타내는 경우가 많다.
+
+*You can use the application context constructor to load bean definitions from all these XML fragments. This constructor takes multiple `Resource` locations, as was shown in the previous section. Alternatively, use one or more occurrences of the `<import/>` element to load bean definitions from another file or files. The following example shows how to do so:*
+
+애플리케이션 컨텍스트 생성자를 사용하여 이러한 모든 XML 조각에서 Bean 정의를 로드할 수 있다. 이 생성자는 이전 섹션에 표시된대로 여러 `Resource` 위치를 사용한다. 대안으로, 하나 이상의 `<import/>` 요소를 사용하여 다른 파일에서 Bean 정의를 로드하라. 다음 예에서는 그 방법을 보여준다.
+
+```xml
+<beans>
+	<import resource="services.xml"/>
+	<import resource="resources/messageSource.xml"/>
+	<import resource="/resources/themeSource.xml"/>
+
+	<bean id="bean1" class="..."/>
+	<bean id="bean2" class="..."/>
+</beans>
+```
+
+*In the preceding example, external bean definitions are loaded from three files: `services.xml`, `messageSource.xml`, and `themeSource.xml`. All location paths are relative to the definition file doing the importing, so `services.xml` must be in the same directory or classpath location as the file doing the importing, while `messageSource.xml` and `themeSource.xml` must be in a `resources` location below the location of the importing file. As you can see, a leading slash is ignored. However, given that these paths are relative, it is better form not to use the slash at all. The contents of the files being imported, including the top level `<beans/>` element, must be valid XML bean definitions, according to the Spring Schema.*
+
+이전 예제에서 외부 Bean 정의는 `services.xml`, `messageSource.xml` 및 `themeSource.xml`의 세가지 파일에서 로드된다. 모든 위치 경로는 가져오기를 수행하는 정의 파일에 상대적이므로 `services.xml`은 가져오기를 수행하는 파일과 동일한 디렉터리 또는 클래스 경로 위치에 있어야 하고 `messageSource.xml` 및 `themeSource.xml`은 해당 위치 아래의 리소스 위치에 있어야 한다. 가져오기 파일의 보다시피 선행 슬래시는 무시된다. 그러나 이러한 경로는 상대적이므로 슬래시를 전혀 사용하지 않는 것이 더 좋다. 최상위 레벨 `<beans/>` 요소를 포함하여 가져오는 파일의 컨텐츠는 Spring 스키마에 따라 유효한 XML Bean 정의여야 한다.
+
+> **Note**
+>
+> *It is possible, but not recommended, to reference files in parent directories using a relative "../" path. Doing so creates a dependency on a file that is outside the current application. In particular, this reference is not recommended for `classpath:` URLs (for example, `classpath:../services.xml`), where the runtime resolution process chooses the “nearest” classpath root and then looks into its parent directory. Classpath configuration changes may lead to the choice of a different, incorrect directory.*
+>
+> *You can always use fully qualified resource locations instead of relative paths: for example, `file:C:/config/services.xml` or `classpath:/config/services.xml`. However, be aware that you are coupling your application’s configuration to specific absolute locations. It is generally preferable to keep an indirection for such absolute locations — for example, through "${…​}" placeholders that are resolved against JVM system properties at runtime.*
+>
+> 상대 "../" 경로를 사용하여 상위 디렉터리의 파일을 참조하는 것이 가능하지만 권장되지는 않는다. 이렇게 하면 현재 애플리케이션 외부에 있는 파일에 대한 종속성이 생성된다. 특히 이 참조는 런타임 확인 프로세스가 "가장 가까운" 클래스 경로 루트를 선택한 다음 해당 상위 디렉터리를 조사하는 `classpath:` URL(예: `classpath:../services.xml)`에는 권장되지 않는다. 클래스 경로 구성 변경으로 인해 다른 잘못된 디렉터리가 선택될 수 있다.
+>
+> 상대 경로 대신 항상 정규화된 리소스 위치를 사용할 수 있다(예: `file:C:/config/services.xml` 또는 `classpath:/config/services.xml`). 그러나 애플리케이션 구성을 특정 절대 위치에 결합하고 있다는 점에 유의하라. 일반적으로 런타임 시 JVM 시스템 속성에 대해 확인되는 "${...}" 자리 표시자를 통해 이러한 절대 위치에 대한 간접 참조를 유지하는 것이 좋다.
+
+*The namespace itself provides the import directive feature. Further configuration features beyond plain bean definitions are available in a selection of XML namespaces provided by Spring — for example, the `context` and `util` namespaces.*
+
+네임스페이스 자체는 import 지시문 기능을 제공한다. 일반 빈 정의 이상의 추가 구성 기능은 Spring이 제공하는 XML 네임스페이스 선택(예: `context` 및 `util` 네임스페이스)에서 사용할 수 있다.
+
+## 【1.1.2.4】Groovy Bean 정의 DSL
+¶ The Groovy Bean Definition DSL
+
+*As a further example for externalized configuration metadata, bean definitions can also be expressed in Spring’s Groovy Bean Definition DSL, as known from the Grails framework. Typically, such configuration live in a ".groovy" file with the structure shown in the following example:*
+
+외부화된 구성 메타데이터에 대한 추가 예로서, Grails 프레임워크에서 알려진 것처럼 Bean 정의는 Spring의 Groovy Bean 정의 DSL로 표현될 수도 있다. 일반적으로 이러한 구성은 다음 예에 표시된 구조를 사용하여 ".groovy" 파일에 있다.
+
+```groovy
+beans {
+	dataSource(BasicDataSource) {
+		driverClassName = "org.hsqldb.jdbcDriver"
+		url = "jdbc:hsqldb:mem:grailsDB"
+		username = "sa"
+		password = ""
+		settings = [mynew:"setting"]
+	}
+	sessionFactory(SessionFactory) {
+		dataSource = dataSource
+	}
+	myService(MyService) {
+		nestedBean = { AnotherBean bean ->
+			dataSource = dataSource
+		}
+	}
+}
+```
+
+*This configuration style is largely equivalent to XML bean definitions and even supports Spring’s XML configuration namespaces. It also allows for importing XML bean definition files through an `importBeans` directive.*
+
+이 구성 스타일은 XML Bean 정의와 거의 동일하며 Spring의 XML 구성 네임스페이스도 지원한다. 또한 `importBeans` 지시어를 통해 XML 빈 정의 파일을 가져올 수 있다.
+
+## 【1.1.2.5】컨테이너 사용
+¶ Using the Container
+
+*The `ApplicationContext` is the interface for an advanced factory capable of maintaining a registry of different beans and their dependencies. By using the method `T getBean(String name, Class<T> requiredType)`, you can retrieve instances of your beans.*
+
+`ApplicationContext`는 다양한 빈의 레지스트리와 해당 종속성을 유지 관리할 수 있는 고급 팩토리를 위한 인터페이스이다. `T getBean(String name, Class<T> requiredType)` 메소드를 사용하여 Bean의 인스턴스를 검색할 수 있다.
+
+```java
+// create and configure beans
+ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");
+
+// retrieve configured instance
+PetStoreService service = context.getBean("petStore", PetStoreService.class);
+
+// use configured instance
+List<String> userList = service.getUsernameList();
+```
+
+*With Groovy configuration, bootstrapping looks very similar. It has a different context implementation class which is Groovy-aware (but also understands XML bean definitions). The following example shows Groovy configuration:*
+
+Groovy 구성을 사용하면 부트스트래핑이 매우 유사해 보인다. Groovy를 인식하는(그러나 XML Bean 정의도 이해하는) 다른 컨텍스트 구현 클래스가 있다. 다음 예에서는 Groovy 구성을 보여준다.
+
+```java
+ApplicationContext context = new GenericGroovyApplicationContext("services.groovy", "daos.groovy");
+```
+
+*The most flexible variant is `GenericApplicationContext` in combination with reader delegates — for example, with `XmlBeanDefinitionReader` for XML files, as the following example shows:*
+
+가장 유연한 변형은 판독기 대리자와 결합된 `GenericApplicationContext`이다. 예를 들어 다음 예제에서 볼 수 있듯이 XML 파일용 `XmlBeanDefinitionReader`를 사용한다.
+
+```java
+GenericApplicationContext context = new GenericApplicationContext();
+new XmlBeanDefinitionReader(context).loadBeanDefinitions("services.xml", "daos.xml");
+context.refresh();
+```
+
+*You can also use the `GroovyBeanDefinitionReader` for Groovy files, as the following example shows:*
+
+다음 예제와 같이 Groovy 파일에 `GroovyBeanDefinitionReader`를 사용할 수도 있다.
+
+```java
+GenericApplicationContext context = new GenericApplicationContext();
+new GroovyBeanDefinitionReader(context).loadBeanDefinitions("services.groovy", "daos.groovy");
+context.refresh();
+```
+
+*You can mix and match such reader delegates on the same `ApplicationContext`, reading bean definitions from diverse configuration sources.*
+
+다양한 구성 소스에서 Bean 정의를 읽어 동일한 `ApplicationContext`에서 이러한 판독기 대리자를 혼합하고 일치시킬 수 있다.
+
+*You can then use `getBean` to retrieve instances of your beans. The `ApplicationContext` interface has a few other methods for retrieving beans, but, ideally, your application code should never use them. Indeed, your application code should have no calls to the `getBean()` method at all and thus have no dependency on Spring APIs at all. For example, Spring’s integration with web frameworks provides dependency injection for various web framework components such as controllers and JSF-managed beans, letting you declare a dependency on a specific bean through metadata (such as an autowiring annotation).*
+
+그런 다음 `getBean`을 사용하여 Bean의 인스턴스를 검색할 수 있다. `ApplicationContext` 인터페이스에는 Bean을 검색하기 위한 몇 가지 다른 메소드가 있지만 이상적으로는 애플리케이션 코드에서 이를 사용해서는 안된다. 실제로 애플리케이션 코드에는 `getBean()` 메서드에 대한 호출이 전혀 없어야 하며 따라서 Spring API에 전혀 종속성이 없어야 한다. 예를 들어 Spring의 웹 프레임워크 통합은 컨트롤러 및 JSF 관리 빈과 같은 다양한 웹 프레임워크 구성요소에 대한 종속성 주입을 제공하여 메타데이터(예: 종속성 자동주입)를 통해 특정 빈에 대한 종속성을 선언할 수 있게 해준다.
