@@ -14,6 +14,8 @@
   child:
     - name: Documentation
       link: documentation
+    - name: Vagrant
+      link: vagrant
 
 - name: Video
   link: video
