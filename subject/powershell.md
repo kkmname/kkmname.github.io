@@ -1,4 +1,4 @@
 ---
 layout: subject
-permalink: /vargrant
+permalink: /powershell
 ---

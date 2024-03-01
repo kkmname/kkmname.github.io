@@ -14,8 +14,10 @@
   child:
     - name: Documentation
       link: documentation
-    - name: Vagrant
-      link: vagrant
+    - name: Spring
+      link: spring
+    - name: PowerShell
+      link: powershell
 
 - name: Video
   link: video
