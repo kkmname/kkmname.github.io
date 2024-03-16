@@ -12,12 +12,8 @@
 - name: Tech
   link: #
   child:
-    - name: Documentation
-      link: documentation
-    - name: Spring
-      link: spring
-    - name: PowerShell
-      link: powershell
+    - name: WSL
+      link: wsl
 
 - name: Video
   link: video

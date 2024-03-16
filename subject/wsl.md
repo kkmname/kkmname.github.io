@@ -1,4 +1,4 @@
 ---
 layout: subject
-permalink: /mariadb
+permalink: /wsl
 ---
